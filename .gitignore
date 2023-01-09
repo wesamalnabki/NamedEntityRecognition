@@ -1,2 +1,2 @@
-/main/data/EN_TOR_NER_8Cat_bertmulti_cased/pytorch_model.bin
-/main/data/ES_NER_11Cat_beto_es_cased/pytorch_model.bin
+/data/EN_TOR_NER_8Cat_bertmulti_cased/pytorch_model.bin
+/data/ES_NER_11Cat_beto_es_cased/pytorch_model.bin

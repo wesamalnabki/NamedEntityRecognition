@@ -9,7 +9,7 @@ from torch import cuda
 from tqdm import tqdm
 from transformers import BertTokenizerFast, BertForTokenClassification
 
-from .utils import collapse, base64_to_string, handle_long_text
+from model.ner_utils import collapse, base64_to_string, handle_long_text
 
 MAX_LEN = 512
 
@@ -23,15 +23,14 @@ class NamedEntityRecognition:
     A class for Named Entity Recognition in Spanish and English (TOR) network
 
     The following classes are supported for English:
-    -	Products
-    -	Organization
-    -	Quantities
+    -	Drug name
+    -   Weapon name
     -	Person
-    -	Time
-    -	Events
+    -	Date
     -	Money
     -	Location
     -	Language
+    -   MISC
 
     The following classes are supported for Spanish:
     - PRODUCTS
@@ -96,16 +95,17 @@ class NamedEntityRecognition:
 
         self.ids_to_labels_en = {v: k for k, v in self.labels_to_ids_en.items()}
 
-    def load_model_ner_es(self):
-        """
-        A function to load NER model for Spanish
-        :return: None
-        """
         # Load NER Spanish model
         self.tokenizer_es = BertTokenizerFast.from_pretrained(MODEL_NAME_PATH_ES, do_lower_case=False)
         self.model_es = BertForTokenClassification.from_pretrained(MODEL_NAME_PATH_ES,
                                                                    num_labels=len(self.ids_to_labels_es))
         self.model_es.to(self.device)
+
+        # Load NER English model
+        self.tokenizer_en = BertTokenizerFast.from_pretrained(MODEL_NAME_PATH_EN, do_lower_case=False)
+        self.model_en = BertForTokenClassification.from_pretrained(MODEL_NAME_PATH_EN,
+                                                                   num_labels=len(self.ids_to_labels_en))
+        self.model_en.to(self.device)
 
     @staticmethod
     def _decode_input(input_text, input_encoding):
@@ -232,27 +232,7 @@ class NamedEntityRecognition:
             'spent_time': spent_time
         }
 
-    def unload_model_ner_es(self):
-        """
-        Function to remove the Spanish NER model from the memory
-        :return: None
-        """
-        del self.tokenizer_es
-        del self.model_es
-        torch.cuda.empty_cache()
-
-    def load_model_ner_tor(self):
-        """
-        Function to load TOR NER model to memory
-        :return:
-        """
-        # Load NER English model
-        self.tokenizer_en = BertTokenizerFast.from_pretrained(MODEL_NAME_PATH_EN, do_lower_case=False)
-        self.model_en = BertForTokenClassification.from_pretrained(MODEL_NAME_PATH_EN,
-                                                                   num_labels=len(self.ids_to_labels_en))
-        self.model_en.to(self.device)
-
-    def recognize_named_entities_tor(self, text, text_encoding='UTF-8'):
+    def recognize_named_entities_en(self, text, text_encoding='UTF-8'):
         """
         A function to recognize named entities in English text
         :param text: English text
@@ -346,12 +326,3 @@ class NamedEntityRecognition:
             'result_collapsed': [element for tup in collapsed for element in tup],
             'spent_time': spent_time
         }
-
-    def unload_model_ner_tor(self):
-        """
-        Function to unload NER TOR English model from memory
-        :return: None
-        """
-        del self.tokenizer_en
-        del self.model_en
-        torch.cuda.empty_cache()

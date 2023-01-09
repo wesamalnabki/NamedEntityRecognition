@@ -1,0 +1,6 @@
+nose==1.3.7
+torch==1.8.0
+transformers==4.24.0
+nltk==3.7
+tqdm
+flask
